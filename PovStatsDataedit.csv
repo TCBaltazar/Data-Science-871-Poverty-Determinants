@@ -1,0 +1,122 @@
+﻿Country Name,Country Code,Indicator Name,Indicator Code,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018
+Brazil,BRA,Gini index (World Bank estimate),SI.POV.GINI,60.1,,59.6,59.9,59.8,59.6,59,,58.4,58.1,57.6,56.5,56.3,55.6,54.9,54,53.7,,52.9,53.5,52.8,52.1,51.9,53.3,53.3,53.9
+Brazil,BRA,Income share held by highest 20%,SI.DST.05TH.20,64.3,,63.8,63.9,63.8,63.8,63.3,,62.5,62.4,61.8,60.8,60.7,60.2,59.3,58.6,58.2,,57.5,58.2,57.6,57,56.8,58,57.8,58.3
+Brazil,BRA,Income share held by lowest 20%,SI.DST.FRST.20,2.4,,2.4,2.2,2.3,2.4,2.5,,2.5,2.6,2.6,2.9,2.9,3,3,3.2,3.2,,3.3,3.3,3.5,3.6,3.6,3.3,3.2,3.1
+Brazil,BRA,Number of poor at $1.90 a day (2011 PPP) (millions),SI.POV.NOP1,31.1,,21,23.2,23.3,21.5,23,,20.4,18.4,20,17.8,16,13.5,12.8,10.6,10.4,,9.3,7.4,6.2,5.5,6.4,8,9.2,9.3
+Brazil,BRA,Number of poor at $3.20 a day (2011 PPP) (millions),SI.POV.LMIC.NO,56.9,,43.4,44.8,46,43,46.6,,41.3,40,42.4,39.4,36.4,31.9,29.6,25.8,24,,20.1,17.9,15.8,14.2,15.8,18.1,18.9,19.1
+Brazil,BRA,Number of poor at $5.50 a day (2011 PPP) (millions),SI.POV.UMIC.NO,88.8,,72.8,74.8,76.1,75.6,78.9,,72.8,72.3,75.5,73.8,70.5,64,60.6,55.1,52.9,,47.1,42,38.8,35.7,38.1,41.2,42,41.5
+Brazil,BRA,"Population, total",SP.POP.TOTL,156849078,159432716,162019896,164614688,167209040,169785250,172318675,174790340,177196054,179537520,181809246,184006481,186127103,188167356,190130443,192030362,193886508,195713635,197514534,199287296,201035903,202763735,204471769,206163058,207833831,209469333
+Brazil,BRA,Poverty gap at $1.90 a day (2011 PPP) (%),SI.POV.GAPS,8.5,,5.3,6.1,5.9,5.2,5.4,,4.6,3.8,4.3,3.6,3.1,2.7,2.8,2.2,2.1,,1.9,1.4,1,0.9,1.1,1.4,1.6,1.6
+Brazil,BRA,Poverty gap at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC.GP,16.5,,11.2,12,11.9,10.8,11.3,,9.8,8.9,9.5,8.4,7.5,6.3,6.1,5,4.8,,4.1,3.4,2.8,2.4,2.8,3.4,3.7,3.7
+Brazil,BRA,Poverty gap at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC.GP,29.4,,21.7,22.3,22.4,21.2,22.1,,19.4,18.5,19.2,17.9,16.6,14.4,13.6,11.8,11.1,,9.5,8.1,7.2,6.4,6.9,7.9,8.2,8.1
+Brazil,BRA,Poverty gap at national poverty lines (%),SI.POV.NAGP,,,,,,,,,,,,,,,,,,,,,,,,,,
+Brazil,BRA,"Poverty gap at national poverty lines (%), including noncomparable values",SI.POV.NAGP.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+Brazil,BRA,Poverty headcount ratio at $1.90 a day (2011 PPP) (% of population),SI.POV.DDAY,19.8,,12.9,14.1,14,12.7,13.3,,11.5,10.2,11,9.7,8.6,7.2,6.7,5.5,5.4,,4.7,3.7,3.1,2.7,3.2,3.9,4.4,4.4
+Brazil,BRA,Poverty headcount ratio at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC,36.3,,26.8,27.2,27.5,25.3,27.1,,23.3,22.3,23.3,21.4,19.6,17,15.6,13.4,12.4,,10.2,9,7.9,7,7.7,8.8,9.1,9.1
+Brazil,BRA,Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC,56.6,,45,45.5,45.5,44.5,45.8,,41.1,40.3,41.5,40.1,37.9,34,31.9,28.7,27.3,,23.8,21.1,19.3,17.6,18.6,20,20.2,19.8
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,Gini index (World Bank estimate),SI.POV.GINI,,,,35.2,,,38.7,,,42,,,40.9,,,43,,43.7,42.4,42.2,39.7,39.2,38.6,38.5,,
+China,CHN,Income share held by highest 20%,SI.DST.05TH.20,,,,42.9,,,45.6,,,48,,,47.1,,,48.4,,49,48.1,47.8,46.3,45.8,45.4,45.3,,
+China,CHN,Income share held by lowest 20%,SI.DST.FRST.20,,,,7.4,,,6.5,,,5.6,,,5.8,,,5.2,,5.1,5.4,5.3,6.2,6.2,6.4,6.5,,
+China,CHN,Number of poor at $1.90 a day (2011 PPP) (millions),SI.POV.NOP1,668.1,,,508,,,504.3,,,405.9,,,241.7,,,196.8,,149.9,106.6,87.8,25.3,18.6,10,7.2,,
+China,CHN,Number of poor at $3.20 a day (2011 PPP) (millions),SI.POV.LMIC.NO,982.7,,,888,,,856.4,,,739.1,,,563.5,,,459.3,,382.2,316.4,273,164.5,129.8,95.7,74.4,,
+China,CHN,Number of poor at $5.50 a day (2011 PPP) (millions),SI.POV.UMIC.NO,1134.5,,,1124.4,,,1114.1,,,1032.4,,,919.5,,,803.5,,715.2,661.4,599.1,493.5,429.9,373.2,330.4,,
+China,CHN,"Population, total",SP.POP.TOTL,1178440000,1191835000,1204855000,1217550000,1230075000,1241935000,1252735000,1262645000,1271850000,1280400000,1288400000,1296075000,1303720000,1311020000,1317885000,1324655000,1331260000,1337705000,1344130000,1350695000,1357380000,1364270000,1371220000,1378665000,1386395000,1392730000
+China,CHN,Poverty gap at $1.90 a day (2011 PPP) (%),SI.POV.GAPS,20.4,,,12.9,,,13.1,,,10.1,,,4.9,,,3.9,,2.7,1.8,1.4,0.4,0.3,0.2,0.1,,
+China,CHN,Poverty gap at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC.GP,41.5,,,31.7,,,30.5,,,24.6,,,15.5,,,12.4,,9.7,7.4,6.2,2.8,2.1,1.4,1,,
+China,CHN,Poverty gap at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC.GP,62.5,,,54,,,51.4,,,43.9,,,33.5,,,27.6,,23.1,19.8,17.3,11.7,9.7,7.8,6.5,,
+China,CHN,Poverty gap at national poverty lines (%),SI.POV.NAGP,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,"Poverty gap at national poverty lines (%), including noncomparable values",SI.POV.NAGP.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,Poverty headcount ratio at $1.90 a day (2011 PPP) (% of population),SI.POV.DDAY,56.7,,,41.7,,,40.3,,,31.7,,,18.5,,,14.9,,11.2,7.9,6.5,1.9,1.4,0.7,0.5,,
+China,CHN,Poverty headcount ratio at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC,83.4,,,72.9,,,68.4,,,57.7,,,43.2,,,34.7,,28.6,23.5,20.2,12.1,9.5,7,5.4,,
+China,CHN,Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC,96.3,,,92.3,,,88.9,,,80.6,,,70.5,,,60.7,,53.5,49.2,44.4,36.4,31.5,27.2,24,,
+China,CHN,Poverty headcount ratio at national poverty lines (% of population),SI.POV.NAHC,,,,,,,,49.8,,,,,30.2,,,,,17.2,12.7,10.2,8.5,7.2,5.7,4.5,3.1,1.7
+China,CHN,"Poverty headcount ratio at national poverty lines (% of population), including noncomparable values",SI.POV.NAHC.NC,,,,,,,,49.8,,,,,30.2,,,,,17.2,12.7,10.2,8.5,7.2,5.7,4.5,3.1,1.7
+China,CHN,Rural poverty gap at national poverty lines (%),SI.POV.RUGP,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,"Rural poverty gap at national poverty lines (%), including noncomparable values",SI.POV.RUGP.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,Rural poverty headcount ratio at national poverty lines (% of rural population),SI.POV.RUHC,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,"Rural poverty headcount ratio at national poverty lines (% of rural population), including noncomparable values",SI.POV.RUHC.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+China,CHN,"Survey mean consumption or income per capita, bottom 40% (2011 PPP $ per day)",SI.SPR.PC40,,,,,,,,,,,,,,,,,,,,,3.92,,,4.99,,
+China,CHN,"Survey mean consumption or income per capita, top 10% (2011 PPP $ per day)",SI.SPR.PT10,,,,,,,,,,,,,,,,,,,,,28.66,,,34.14,,
+China,CHN,"Survey mean consumption or income per capita, top 60% (2011 PPP $ per day)",SI.SPR.PT60,,,,,,,,,,,,,,,,,,,,,13.16,,,16.06,,
+China,CHN,"Survey mean consumption or income per capita, total population (2011 PPP $ per day)",SI.SPR.PCAP,,,,,,,,,,,,,,,,,,,,,9.46,,,11.63,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+India,IND,Gini index (World Bank estimate),SI.POV.GINI,31.7,,,,,,,,,,,34.4,,,,,35.4,,35.7,,,,,,,
+India,IND,Income share held by fourth 20%,SI.DST.04TH.20,21.2,,,,,,,,,,,20.6,,,,,20.5,,20.5,,,,,,,
+India,IND,Income share held by highest 10%,SI.DST.10TH.10,26.7,,,,,,,,,,,29.1,,,,,30,,30.1,,,,,,,
+India,IND,Income share held by highest 20%,SI.DST.05TH.20,41.1,,,,,,,,,,,43.5,,,,,44.2,,44.4,,,,,,,
+India,IND,Income share held by lowest 10%,SI.DST.FRST.10,3.8,,,,,,,,,,,3.7,,,,,3.5,,3.5,,,,,,,
+India,IND,Income share held by lowest 20%,SI.DST.FRST.20,8.9,,,,,,,,,,,8.5,,,,,8.3,,8.1,,,,,,,
+India,IND,Income share held by second 20%,SI.DST.02ND.20,12.7,,,,,,,,,,,12,,,,,11.8,,11.7,,,,,,,
+India,IND,Income share held by third 20%,SI.DST.03RD.20,16.2,,,,,,,,,,,15.4,,,,,15.2,,15.2,,,,,,,
+India,IND,Median daily per capita income or consumption expenditure (2011 PPP),SI.POV.XPND.MD,,,,,,,,,,,,,,,,,,,,,,,,,,
+India,IND,Number of poor at $1.90 a day (2011 PPP) (millions),SI.POV.NOP1,450.1,,,,,,,,,,,450.4,,,,,404.9,,284.6,,,,,,,
+India,IND,Number of poor at $3.20 a day (2011 PPP) (millions),SI.POV.LMIC.NO,774.7,,,,,,,,,,,861,,,,,876.9,,780.6,,,,,,,
+India,IND,Number of poor at $5.50 a day (2011 PPP) (millions),SI.POV.UMIC.NO,903.5,,,,,,,,,,,1049.7,,,,,1124.3,,1106.8,,,,,,,
+India,IND,"Population, total",SP.POP.TOTL,927403860,945601831,963922588,982365243,1000900030,1019483581,1038058156,1056575549,1075000085,1093317189,1111523144,1129623456,1147609927,1165486291,1183209472,1200669765,1217726215,1234281170,1250288729,1265782790,1280846129,1295604184,1310152403,1324509589,1338658835,1352617328
+India,IND,Poverty gap at $1.90 a day (2011 PPP) (%),SI.POV.GAPS,12.8,,,,,,,,,,,9.8,,,,,7.5,,4.6,,,,,,,
+India,IND,Poverty gap at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC.GP,35.3,,,,,,,,,,,30.7,,,,,26.7,,20.6,,,,,,,
+India,IND,Poverty gap at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC.GP,58.5,,,,,,,,,,,54.1,,,,,50.5,,44.4,,,,,,,
+India,IND,Poverty gap at national poverty lines (%),SI.POV.NAGP,,,,,,,,,,,,,,,,,,,,,,,,,,
+India,IND,"Poverty gap at national poverty lines (%), including noncomparable values",SI.POV.NAGP.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+India,IND,Poverty headcount ratio at $1.90 a day (2011 PPP) (% of population),SI.POV.DDAY,47.6,,,,,,,,,,,39.9,,,,,32.8,,22.5,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, age 0-14  (2011 PPP) (% of population age 0-14)",SI.POV.DDAY.14,,,,,,,,,,,,,,,,,,,29.7,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, age 15-64 (2011 PPP) (% of population age 15-64)",SI.POV.DDAY.1564,,,,,,,,,,,,,,,,,,,20,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, age 65+ (2011 PPP) (% of population age 65+)",SI.POV.DDAY.65,,,,,,,,,,,,,,,,,,,18.9,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, Female (2011 PPP) (% of female population)",SI.POV.DDAY.FE,,,,,,,,,,,,,,,,,,,23.4,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, Male  (2011 PPP) (% of male population)",SI.POV.DDAY.MA,,,,,,,,,,,,,,,,,,,22.3,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, rural (2011 PPP) (% of rural population)",SI.POV.DDAY.RU,,,,,,,,,,,,,,,,,,,26.3,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, urban (2011 PPP) (% of urban population)",SI.POV.DDAY.UR,,,,,,,,,,,,,,,,,,,14.2,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, with primary education (2011 PPP) (% of population age 16+ with primary education)",SI.POV.DDAY.16.PR,,,,,,,,,,,,,,,,,,,23.3,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, with secondary education (2011 PPP) (% of population age 16+ with secondary education)",SI.POV.DDAY.16.SG,,,,,,,,,,,,,,,,,,,13.9,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day, without education (2011 PPP) (% of population age 16+ without education)",SI.POV.DDAY.16.PL,,,,,,,,,,,,,,,,,,,29.8,,,,,,,
+India,IND,"Poverty headcount ratio at $1.90 a day,  with Tertiary/post-secondary education (2011 PPP) (% of population age 16+ with Tertiary/post-secondary education)",SI.POV.DDAY.16.ST,,,,,,,,,,,,,,,,,,,3.8,,,,,,,
+India,IND,Poverty headcount ratio at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC,81.9,,,,,,,,,,,76.2,,,,,71,,61.7,,,,,,,
+India,IND,Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC,95.5,,,,,,,,,,,92.9,,,,,91.1,,87.4,,,,,,,
+India,IND,Poverty headcount ratio at national poverty lines (% of population),SI.POV.NAHC,45.3,,,,,,,,,,,37.2,,,,,29.8,,21.9,,,,,,,
+India,IND,"Poverty headcount ratio at national poverty lines (% of population), including noncomparable values",SI.POV.NAHC.NC,45.3,,,,,,,,,,,37.2,,,,,29.8,,21.9,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Russian Federation,RUS,Gini index (World Bank estimate),SI.POV.GINI,48.4,,,46.1,38.4,38.1,37.4,37.1,36.9,37.3,40,40.3,41.3,41,42.3,41.6,39.8,39.5,39.7,40.7,40.9,39.9,37.7,36.8,37.2,37.5
+Russian Federation,RUS,Income share held by fourth 20%,SI.DST.04TH.20,20.2,,,21.1,22.1,22.6,23,22.9,22.6,22.5,21.9,22.1,21.8,21.7,21.2,21,21.2,21.6,21.3,21,21,21,21.5,21.9,21.7,21.4
+Russian Federation,RUS,Income share held by highest 10%,SI.DST.10TH.10,38.3,,,35.6,29.4,28.6,27.7,27.6,27.9,28.2,30.3,30.5,31.4,31.3,32.8,32.5,31.1,30.6,31.1,32.2,32.5,31.9,29.7,28.6,29.2,29.9
+Russian Federation,RUS,Income share held by highest 20%,SI.DST.05TH.20,53.3,,,51.1,45.1,44.6,43.8,43.7,43.8,44.2,46.7,46.8,47.7,47.5,48.9,48.5,47.1,46.6,47,47.9,48,47.1,45.3,44.3,44.8,45.1
+Russian Federation,RUS,Income share held by lowest 10%,SI.DST.FRST.10,1.7,,,1.6,2.4,2.4,2.4,2.5,2.6,2.6,2.4,2.3,2.3,2.3,2.3,2.4,2.6,2.5,2.6,2.5,2.6,2.6,2.8,2.8,2.9,2.9
+Russian Federation,RUS,Income share held by lowest 20%,SI.DST.FRST.20,4.4,,,4.5,6.3,6.2,6.3,6.4,6.6,6.6,6.1,6,5.8,5.9,5.8,6.1,6.4,6.4,6.5,6.3,6.4,6.6,6.9,7,7,7.1
+Russian Federation,RUS,Income share held by second 20%,SI.DST.02ND.20,8.7,,,9.2,11,10.9,11,11.1,11.2,11.1,10.4,10.3,10.1,10.2,9.9,10.1,10.5,10.5,10.5,10.3,10.3,10.6,11.1,11.2,11.2,11.2
+Russian Federation,RUS,Income share held by third 20%,SI.DST.03RD.20,13.4,,,14.1,15.6,15.7,15.9,15.9,15.8,15.5,14.9,14.9,14.5,14.7,14.2,14.3,14.7,14.8,14.7,14.5,14.4,14.7,15.2,15.5,15.3,15.2
+Russian Federation,RUS,Number of poor at $1.90 a day (2011 PPP) (millions),SI.POV.NOP1,5.5,,,7.1,2.4,3.5,6.7,4.5,2.7,1.6,1.6,1.5,1.2,0.7,0.3,0.1,0.1,0.1,0.1,0,0,0,0.1,0,0.1,0
+Russian Federation,RUS,Number of poor at $3.20 a day (2011 PPP) (millions),SI.POV.LMIC.NO,19.6,,,20.1,11.2,15.2,24.8,19.1,13.1,9.7,9.5,8.1,6.4,4.7,2.9,1.3,1.2,1.1,0.8,0.8,0.6,0.5,0.6,0.5,0.6,0.5
+Russian Federation,RUS,Number of poor at $5.50 a day (2011 PPP) (millions),SI.POV.UMIC.NO,45.2,,,44.7,38.4,46.6,63.9,55.5,45.4,38.1,35.8,31.4,26.6,21.8,15.9,10.5,9.9,7.9,6.7,6.1,5.4,5.2,5.9,5.9,5.5,5.3
+Russian Federation,RUS,"Population, total",SP.POP.TOTL,148458777,148407912,148375787,148160129,147915361,147670784,147214776,146596869,145976482,145306497,144648618,144067316,143518814,143049637,142805114,142742366,142785349,142849468,142960908,143201721,143506995,143819666,144096870,144342396,144496740,144477860
+Russian Federation,RUS,Poverty gap at $1.90 a day (2011 PPP) (%),SI.POV.GAPS,0.5,,,1,0.4,0.6,1.1,0.7,0.4,0.2,0.3,0.2,0.2,0.1,0,0,0,0,0,0,0,0,0,0,0,0
+Russian Federation,RUS,Poverty gap at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC.GP,3.7,,,4.3,1.9,2.7,4.8,3.5,2.3,1.5,1.6,1.3,1,0.7,0.4,0.2,0.1,0.2,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1
+Russian Federation,RUS,Poverty gap at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC.GP,11.3,,,11.6,7.9,10.2,15.5,12.7,9.5,7.5,7.2,6.3,5.2,4,2.7,1.6,1.5,1.2,1,0.9,0.8,0.7,0.8,0.8,0.8,0.7
+Russian Federation,RUS,Poverty gap at national poverty lines (%),SI.POV.NAGP,,,,,,,,,,,,,,,,,,,,,,,,,,
+Russian Federation,RUS,"Poverty gap at national poverty lines (%), including noncomparable values",SI.POV.NAGP.NC,,,,,,,,,,,,,,,,,,,,,,,,,,
+Russian Federation,RUS,Poverty headcount ratio at $1.90 a day (2011 PPP) (% of population),SI.POV.DDAY,3.7,,,4.8,1.6,2.4,4.5,3.1,1.8,1.1,1.1,1,0.8,0.5,0.2,0.1,0.1,0.1,0,0,0,0,0,0,0,0
+Russian Federation,RUS,Poverty headcount ratio at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC,13.2,,,13.6,7.6,10.3,16.8,13.1,8.9,6.6,6.6,5.6,4.5,3.3,2,0.9,0.9,0.8,0.5,0.5,0.4,0.3,0.4,0.4,0.4,0.4
+Russian Federation,RUS,Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC,30.5,,,30.2,26,31.6,43.4,37.9,31.1,26.2,24.7,21.8,18.5,15.3,11.2,7.3,7,5.6,4.7,4.3,3.8,3.6,4.1,4.1,3.8,3.7
+Russian Federation,RUS,Poverty headcount ratio at national poverty lines (% of population),SI.POV.NAHC,,,,,,,,29,,24.6,20.3,17.6,17.8,15.2,13.3,13.4,13,12.5,12.7,10.7,10.8,11.2,13.3,13.3,13.2,12.6
+Russian Federation,RUS,"Poverty headcount ratio at national poverty lines (% of population), including noncomparable values",SI.POV.NAHC.NC,,,,,,,,29,,24.6,20.3,17.6,17.8,15.2,13.3,13.4,13,12.5,12.7,10.7,10.8,11.2,13.3,13.3,13.2,12.6
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+South Africa,ZAF,Gini index (World Bank estimate),SI.POV.GINI,59.3,,,60.7,,,,57.8,,,,,64.8,,,63,,63.4,,,,63,,,,
+South Africa,ZAF,Income share held by fourth 20%,SI.DST.04TH.20,18.2,,,17.5,,,,18.8,,,,,14.2,,,15.8,,15.9,,,,16.5,,,,
+South Africa,ZAF,Income share held by highest 10%,SI.DST.10TH.10,46.7,,,47.5,,,,44.9,,,,,54.2,,,51.3,,51.3,,,,50.5,,,,
+South Africa,ZAF,Income share held by highest 20%,SI.DST.05TH.20,64.3,,,65.9,,,,62.6,,,,,71,,,68.7,,68.9,,,,68.2,,,,
+South Africa,ZAF,Income share held by lowest 10%,SI.DST.FRST.10,1.3,,,1,,,,1.3,,,,,1,,,1,,0.9,,,,0.9,,,,
+South Africa,ZAF,Income share held by lowest 20%,SI.DST.FRST.20,2.9,,,2.7,,,,3.1,,,,,2.6,,,2.6,,2.5,,,,2.4,,,,
+South Africa,ZAF,Income share held by second 20%,SI.DST.02ND.20,5.3,,,5.2,,,,5.6,,,,,4.7,,,4.9,,4.7,,,,4.8,,,,
+South Africa,ZAF,Income share held by third 20%,SI.DST.03RD.20,9.3,,,8.7,,,,9.9,,,,,7.5,,,8.1,,8,,,,8.2,,,,
+South Africa,ZAF,Number of poor at $1.90 a day (2011 PPP) (millions),SI.POV.NOP1,12.5,,,15.3,,,,15.8,,,,,12.3,,,8.5,,8.3,,,,10.4,,,,
+South Africa,ZAF,Number of poor at $3.20 a day (2011 PPP) (millions),SI.POV.LMIC.NO,19.8,,,23.6,,,,24.2,,,,,23.2,,,18.6,,18.2,,,,20.7,,,,
+South Africa,ZAF,Number of poor at $5.50 a day (2011 PPP) (millions),SI.POV.UMIC.NO,26.5,,,30,,,,32,,,,,32.4,,,29.1,,28.7,,,,31.5,,,,
+South Africa,ZAF,"Population, total",SP.POP.TOTL,39633750,40564059,41435758,42241011,42987461,43682260,44338543,44967708,45571274,46150913,46719196,47291610,47880601,48489459,49119759,49779471,50477011,51216964,52004172,52834005,53689236,54545991,55386367,56203654,57000451,57779622
+South Africa,ZAF,Poverty gap at $1.90 a day (2011 PPP) (%),SI.POV.GAPS,10.8,,,14.2,,,,13,,,,,8.2,,,4.7,,4.8,,,,6.1,,,,
+South Africa,ZAF,Poverty gap at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC.GP,23.3,,,27.6,,,,25.9,,,,,20.4,,,13.8,,13.6,,,,15.1,,,,
+South Africa,ZAF,Poverty gap at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC.GP,38.4,,,43,,,,41.3,,,,,36.9,,,28.3,,27.5,,,,29,,,,
+South Africa,ZAF,Poverty headcount ratio at $1.90 a day (2011 PPP) (% of population),SI.POV.DDAY,31.5,,,36.3,,,,34.8,,,,,25.7,,,16.7,,16.2,,,,18.7,,,,
+South Africa,ZAF,Poverty headcount ratio at $3.20 a day (2011 PPP) (% of population),SI.POV.LMIC,49.9,,,55.8,,,,53.2,,,,,48.4,,,36.8,,35.6,,,,37.3,,,,
+South Africa,ZAF,Poverty headcount ratio at $5.50 a day (2011 PPP) (% of population),SI.POV.UMIC,66.9,,,71,,,,70.2,,,,,67.7,,,57.6,,56,,,,56.9,,,,
+South Africa,ZAF,Poverty headcount ratio at national poverty lines (% of population),SI.POV.NAHC,,,,,,,,,,,,,66.6,,,62.1,,53.2,,,,55.5,,,,
+South Africa,ZAF,"Poverty headcount ratio at national poverty lines (% of population), including noncomparable values",SI.POV.NAHC.NC,,,31,,,,,38,,,,,66.6,,,62.1,,53.2,,,,55.5,,,,

@@ -1,0 +1,718 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2577
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 CourierNewPSMT;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww28600\viewh15440\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs28 \cf0 ---\
+title: "An Empirical Investigation into the Determinants of Poverty for Brazil (1985-2018)"\
+output:\
+  pdf_document:\
+    number_sections: TRUE\
+\
+geometry: "left = 2.5cm, right = 2cm, top = 2cm, bottom = 2cm"\
+fontsize: 12pt\
+header-includes:\
+  - \\usepackage\{float\}\
+  - \\floatplacement\{figure\}\{H\}\
+  - \\usepackage\{sectsty\}\
+  - \\usepackage\{paralist\}\
+  - \\usepackage\{setspace\}\\spacing\{1.5\}\
+  - \\usepackage\{fancyhdr\}\
+  - \\usepackage\{lastpage\}\
+  - \\usepackage\{dcolumn\}\
+  - \\usepackage\{inputenc\}\
+  - \\usepackage\{natbib\}\\bibliographystyle\{agsm\}\
+  - \\usepackage[nottoc, numbib]\{tocbibind\}\
+---\
+\\thispagestyle\{empty\}\
+\
+```\{r setup, include=FALSE\}\
+knitr::opts_chunk$set(\
+	echo = FALSE,\
+	fig.align = "left",\
+	fig.height = 3,\
+	fig.pos = "H",\
+	fig.width = 5,\
+	message = FALSE,\
+	warning = FALSE,\
+	comment = NA\
+)\
+options(tinytex.verbose = TRUE)\
+\
+# Loading Packages\
+library(pacman)\
+pacman::p_load("tidyverse", "Hmisc", "lubridate", "glmnet", "RSQLite", "dbplyr", "DBI", "sqldf", "rsample", "randomForest", "imputeTS", "tseries", "caret", "plotmo", "pastecs", "kableExtra", "corrplot", "vip")\
+\
+pacman::p_load_gh("kassambara/ggcorrplot")\
+```\
+\
+```\{r, eval=FALSE, include=FALSE\}\
+\
+dir.create("data_raw", showWarnings = FALSE)\
+# Downloading Raw Data from World Bank site\
+\
+download.file(url="https://databank.worldbank.org/data/download/PovStats_csv.zip", destfile="data_raw/WB_data.zip", mode="wb")\
+\
+unzip(zipfile="/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/WB_data.zip", exdir="/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/")\
+```\
+\
+```\{r, include=FALSE\}\
+# Loading data\
+WB_dta <- read.csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/PovStatsData.csv")\
+WDI <-read.csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/WDI/WDIData.csv")\
+```\
+\
+```\{r, eval=FALSE, include=FALSE\}\
+# Attempt at using SQL\
+WB_db <- DBI::dbConnect(RSQLite::SQLite(), "WB_SQL")\
+dbWriteTable(WB_db, "WB_data1", WB_dta)\
+\
+dbListTables(WB_db)\
+dbListFields(WB_db, "WB_data")\
+\
+data <- dplyr::tbl(WB_db, "WB_data")\
+data %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% \
+  pivot_wider(names_from="Indicator")%>%\
+  mutate_at("Year", str_replace, "X", "")%>%\
+  arrange(Country.Name, Year)\
+\
+# Unable to apply necessary transformations to make data tidy:\
+  #Error in UseMethod("unite_") :  no applicable method for 'unite_' applied to an object of class "c('tbl_SQLiteConnection')\
+\
+# Therefore continue analysis using methods from Tidyverse to organize data\
+```\
+\
+\
+```\{r, include=FALSE\}\
+\
+# Converting database to Relational\
+## The data sourced from the World Bank had years as columns, with the relevant Poverty & Equity indicators under one column titled Indicator Name. \
+\
+head(data, n=10)\
+\
+# To make the data tidy, three steps were taken.\
+# 1. The indicator codes associated with each indicator were merged\
+# 2. Years were put into a single column titled "Year"\
+# 3. The indicators were turned into columns\
+\
+# Changing Format of Data and Uniting datasets\
+dta <- WB_dta %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% \
+  pivot_wider(names_from="Indicator")%>%\
+  mutate_at("Year", str_replace, "X", "")%>%\
+  arrange(Country.Name, Year)\
+\
+# The whole dataset was then arranged by country name and year, yielding: \
+head(dta, n=10)\
+\
+# Restricting Study to Brazil Post-1985 Period\
+dta1 <- dta%>%filter(Country.Name== "Brazil") %>% filter(Year>1984)\
+\
+# Sourced additional World Bank WDI Data to further analysis, and make tidy \
+\
+WDI_dta <- WDI %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% \
+  pivot_wider(names_from="Indicator")%>%\
+  mutate_at("Year", str_replace, "X", "")%>%\
+  filter(Year>1984) %>%\
+  arrange(Country.Name, Year)\
+\
+# We now have two datasets that can be merged, by country, in order to analyze the determinants of the poverty headcount ratio in Brazil using a more complete list of variables.\
+\
+full_BR <- left_join(dta1, WDI_dta)%>% select_if(colSums(!is.na(.))>9)%>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x))\
+\
+# Removing variables and renaming remaining \
+dimnames(full_BR)\
+\
+full_clean <- select(full_BR, -1,-2,-4:-6,-8:-10,-15:-21,-23:-24,-32:-33,-35, -38,-41,-45:-46,-48,-51:-52,-57,-59, -64:-65)\
+colnames(full_clean) <- c("Year", "Population", "Y1", "Y2","Y3", "GINI", "Electricity", "Educ_exp", "Teenage_fertility", "HIV", "Age_dependency", "Birth_rate", "CPI", "Death_rate","Debt_service","IR", "Credit_GDP", "Employment_ratio_fem", "Employment_ratio_mal", "Fertility", "Food_prod", "FDI_in","GNI", "Homicide", "LFPR", "Life_exp", "Military_exp", "Mortality_fem", "Mortality_mal", "Largest_city", "Pupil_teacher_pre","Pupil_teacher_ter", "LFPR_femal_to_male", "Rural_pop", "Urban_pop" )\
+\
+# Partitioning data into training and testing\
+\
+## Simple random sampling is not appropriate when using time series data. Due to the temporal dependence of variables, we may lose important information from the series when doing a random split. The data is therefore partitioned sequentially. Generally 20% of sample kept as a testing set, here, since there is a small number of observations, 70% was used for the training data. The training data now contains 23 observations (1985-2007), and the test set the remaining 11 (2008-2018).\
+\
+set.seed(100)\
+\
+train_indices <- seq_len(length.out = floor(x = 0.7 * nrow(x = full_clean)))\
+train <- full_clean[train_indices,]\
+test <- full_clean[-train_indices,]\
+\
+dim(train)\
+dim(test)\
+\
+\
+```\
+\
+\\allsectionsfont\{\\raggedright\}\
+\\subsectionfont\{\\raggedright\}\
+\\subsubsectionfont\{\\raggedright\}\
+\
+\\pagenumbering\{gobble\}\
+\
+\\begin\{centering\}\
+\
+```\{r uni_logo, echo=F, fig.align='center', out.width="51%"\}\
+knitr::include_graphics("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/Stellenbosch_University_new_logo_slogan_for-web-02.jpeg")\
+```\
+\
+\\Large\
+\{\\bf Department of Economics\}\
+\
+\\large\
+\{\\bf Data Science 871\}\
+\
+\\large\
+\
+\{\\bf Tiago Baltazar\} \\\\\
+\{\\bf 19776209\}\\\\\
+\\normalsize\
+\\vspace\{0.2cm\}\
+\
+\{\\bf July 2021\}\
+\
+\\end\{centering\}\
+\
+\\pagenumbering\{arabic\}\
+\\newpage\
+\\centering\
+\\raggedright\
+\\newpage\
+\\setcounter\{tocdepth\}\{2\}\
+\\tableofcontents\
+\\newpage\
+\
+\
+# Introduction\
+\
+\
+# Literature Review\
+**When have LASSO models been used in development??**\
+Variable selection using LASSO procedure done by \
+\
+# Exploratory Analysis\
+The data used for this analysis was sourced from the World Bank (WB) Poverty and Equity database. This contains various indicators relating to countries income distribution, shared prosperity, poverty rates, and the population. When compiling the sample for Brazil, many variables that could be relevant in predicting the poverty headcount ratio had a large number of missing values. In total, 30 variables had more than 26% of observations missing and were therefore excluded. In order to conduct research, data from the WB World Development Indicators was used to supplement the original sample. This contains statistics about global development and includes variables for topics ranging from health and education, to economic policy and debt. Summary statistics for the variables included in the sample can be found in **TABLES 9-14** in the appendix.\
+\
+The poverty headcount ratio measures the proportion of the population living below a specified poverty line. For the purpose of this study, the most stringent poverty line was used, and the evolution of this variable over the sample period can be seen in **FIGURE 1** below, with **FIGURE 2** showing the poverty headcount ratio using different poverty lines.\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Poverty Headcount Ratio (2011 PPP)", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Y1), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "% of Population", title = "Poverty Headcount Ratio at $1.90", subtitle = "2011 PPP", caption = "")\
+\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Poverty Headcount Ratio: Alternative Poverty Lines (2011 PPP)", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Y2), color="blue",group=1)+ geom_line(data=full_clean, aes(x=Year, y=Y3), color="red",group=1)  +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "% of Population", title = "Alternative Poverty Headcount Ratios", subtitle = "2011 PPP", caption = "Note: $3.20 Poverty Line in Blue, $5.50 Poverty Line in Red")\
+\
+\
+```\
+\
+The GINI coefficient was chosen as the measure of income inequality. **FIGURE 3** shows how inequality has evolved over the sample period.\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "GINI Coefficient", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=GINI), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "GINI", title = "Income Inequality", subtitle = "", caption = "")\
+\
+```\
+\
+Whilst poverty has generally been decreasing, inequality appears to be more variable and seems to have been increasing (along with poverty) since 2015. Over the sample period, developmental outcomes appear to have generally been improving in Brazil. Life expectancy **(FIGURE 4)** has increased significantly since 1985, crude birth rates **(FIGURE 5)** have been decreasing, however the discrepancy between male and female employment rates **(FIGURE 6)** remains significant. And, in addition to this, labor force participation among the young **(FIGURE 7)** has been decreasing, which could be indicative of a lack of employment opportunities for young people.\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Life Expectancy", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Life_exp), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "Age (Years)", title = "Life Expectancy at Birth", subtitle = "", caption = "")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Birth Rate", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Birth_rate), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "Births p/1000 People", title = "Birth Rate, crude", subtitle = "", caption = "")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Employment to Population Ratio: Males and Females", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Employment_ratio_mal),color="blue", group=1)+ geom_line(data=full_clean, aes(x=Year, y=Employment_ratio_fem),color="red", group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "%", title = "Employment to Population Ratio", subtitle = "National Estimate", caption = "Note: Male in Blue, Female in Red ")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Youth Labor Force Participation", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=LFPR), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "Total %", title = "Labor Force Participation Rate", subtitle = "Ages 15-24", caption = "")\
+\
+```\
+\
+At the same time, the Age-Dependency ratio **(FIGURE 8)** has decreased significantly. This ratio relates the number of children (0-14 years) to old people (65+) to the working age population **(World Bank, 2021)**, with a lower value indicating that the working age population is getting larger, relative to the "dependent" population. Finally, from **(FIGURE 9)** education expenditure (as a % of GNI) began to increase significantly from 2000 onward, with the expansion in educational expenditure corresponding to the period of decline in the $1.90 poverty headcount ratio.\
+\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Age Dependency Ratio", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Age_dependency), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "% of Working Age Pop", title = "Age Dependency Ratio", subtitle = "", caption = "")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Education Expenditure", fig.height = 3, fig.width = 4.5\}\
+\
+ggplot() + geom_line(data=full_clean, aes(x=Year, y=Educ_exp), group=1) +scale_x_discrete(breaks = seq(1985, 2015, by = 5))+theme_bw() +\
+    labs(x = "Year", y = "% of GNI", title = "Adjusted Savings: Education Expenditure", subtitle = "", caption = "")\
+\
+```\
+\
+\
+**FIGURE XYX in the appendix** displays the correlation plot for all of the variables included in the final dataset. The variables Y1, Y2, and Y3 represent the poverty headcount ratio at \\$1.90, \\$3.20, and \\$5.50 poverty lines respectively. The variable of interest for this study is Y1. From this plot, it can be seen that Y1 is significantly positively correlated with the male employment ratio, the proportion of the population living in rural areas, the birth rate, fertility and mortality rates, and the GINI coefficient. Whereas it is significantly negatively correlated with the urban population, the total life expectancy, CPI inflation, food production, and the GNI. \
+\
+From this exploratory analysis, one should notice two things. Firstly, the number of predictors is large relative to the sample size of the partitioned dataset. And,in addition, many of the predictors appear to be significantly correlated with eachother. In the presence of high collinearity among regressors, and a large number of potential predictors, relative to the sample size, there will be infinite solutions to the OLS' SSE minimization. Therefore, a method more appropriate to this problem must be used.\
+\
+\
+# Empirical Analysis\
+\
+## Methodology\
+In order to determine the most relevant predictors of the $1.90 poverty headcount ratio in Brazil, a LASSO regression model will be used for variable selection. LASSO belongs to a class of estimators that involve a penalized regression Varian (2014), and can be used to perform variable selection as it can force some coefficients to equal zero. Regularized regression models are most appropriate when there is a large number of potential covariates, where they are possibly highly correlated, and where the number of predictors is potentially larger than the number of observations (Dutt & Tsetlin, 2021). For the, training, sample data, there are 23 observations for 34 variables (p>n), and, as can be seen in **FIGURE XX** in the appendix, many of the predictors are significantly correlated with eachother. Tibshirani (1996) suggests two reasons why mtehods other than OLS would be preferred in this case. Firstly the prediction accuracy of estimates can be improved by shrinking some coefficients to zero; reducing the variance of the predicted values and thereby improving overall prediction accuracy. And secondly for interpretability, the authors argue that it is often desirable to determine a smaller subset of predictors that have the strongest effect on the target variable (Sparcity-Principle).\
+\
+Regularization involves adding a component to the objective function which penalizes the inclusion of additional variables. With the, LASSO, objective function now taking the form:\
+\
+$min(SSE + \\lambda\\sum_\{j=1\}^\{p\} |\\beta_\{j\}|)$\
+\
+With $\\lambda$ the tuning parameter determining the severity of the penalty for including additional predictors. Optimizing the above objective function will yield both zero and non-zero variables, as in Afzal, Hersh, & Newhouse (2015), a variable will be considered selected by the LASSO estimator if it is still non-zero after minimizing the objective function. This should yield more parsimonious models where only a subset of variables will exhibit large non-zero coefficients for the target variable. The performance of the LASSO modelsd fit will then be measured by calculating the root mean square error (RMSE), which can be calculated as $RMSE= \\sqrt\{\\frac\{\\sum_\{i=1\}^\{n\} e_\{i\}^2\}\{n\}\}$, with the $e_\{i\}$ representing the residuals. \
+\
+For the purpose of this analysis, three LASSO regression models were fit with varying values of the tuning parameter $\\lambda$. Firstly, a LASSO model with cross-validation will be fit to determine the optimal value of $\\lambda$ (minimizing the MSE). Then a model will be fit after using a function to determine the $\\lambda$ that yields the lowest RMSE, and finally a LASSO model that gives the smallest cross validation error (minimum $\\lambda$) will be fit. This will provide three distinct lists of coefficients which were significant in determining the $1.90 poverty headcount ratio over the sample period, the model yielding the lowest RMSE will thereafter be deemed to have the most credible performance.\
+\
+## Results\
+In this section, the results from fitting the LASSO models will be discussed. \
+\
+### Cross-Validation LASSO\
+The first LASSO model is fit using a 5-fold cross validation. Prior to discussing the dynamics of the LASSO coefficients, a RIDGE regression model was fit to better visualize the distinction between these two different types of regularization methods. \
+\
+```\{r, include=FALSE\}\
+X1 <- model.matrix(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train)[,-1]\
+\
+Y1 <- log(train$Y1)\
+\
+```\
+\
+```\{r, include=FALSE\}\
+# RIDGE \
+ridge.model1 <- glmnet(\
+  x=X1,\
+  y=Y1,\
+  alpha=0,\
+  standardize=TRUE\
+)\
+\
+ridge1 <- cv.glmnet(\
+  x = X1,\
+  y = Y1,\
+  alpha = 0,\
+  nfolds=5)\
+\
+```\
+\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "RIDGE Penalty Dynamics", fig.height = 4, fig.width = 6\}\
+\
+plot(ridge1)\
+\
+plot_glmnet(ridge.model1, xvar="lambda", label=10)\
+\
+```\
+\
+From this, one can see the main distinctions between LASSO and RIDGE models. Firstly, the RIDGE model has `r sum(coef(ridge1) != 0)` non-zero coefficients, **from Figure 11**, one can see that the coefficient magnitudes get pushed to zero as $\\lambda \\to \\infty$, but not all the way. As can be seen from the variable importance plot for the ridge regression below, many variables are still considered significant predictors of the $1.90 poverty headcount ratio. \
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance (RIDGE)", fig.height = 4, fig.width = 6\}\
+\
+vip(ridge1, num_features = 10, geom = "point")\
+\
+```\
+\
+\
+```\{r, include=FALSE\}\
+# LASSO 1 \
+lasso.model1 <- glmnet(\
+  x=X1,\
+  y=Y1,\
+  alpha=1,\
+  standardize=TRUE\
+)\
+\
+lasso1 <- cv.glmnet(\
+  x = X1,\
+  y = Y1,\
+  alpha = 1,\
+  nfolds=5)\
+\
+pred <- predict(lasso1, X1)\
+best_lambda12 <- lasso1$lambda.min\
+best_lambda12\
+```\
+\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "LASSO Penalty Dynamics", fig.height = 4, fig.width = 6\}\
+\
+plot(lasso1)\
+\
+plot_glmnet(lasso.model1, xvar="lambda", label=10)\
+\
+```\
+\
+From the above figure one can see that the LASSO penalty forced `r sum(coef(lasso1) == 0)` of the coefficients to zero. Now there are only `r sum(coef(lasso1) != 0)` non-zero predictors. The variable importance plot and list of non-zero coefficients are presented below:\
+\
+```\{r\}\
+coefList <- coef(lasso1)\
+coefList <- data.frame(coefList@Dimnames[[1]][coefList@i+1],coefList@x)\
+names(coefList) <- c('var','val')\
+\
+\
+coefList%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List (1)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance (LASSO 1)", fig.height = 4, fig.width = 6\}\
+\
+vip(lasso1, num_features = 10, geom = "point")\
+\
+```\
+\
+From the cross-validation LASSO model, only the coefficients for the intercept, male employment ratio, food production, and CPI are significantly different from 0. The food production index appears to have the greatest effect on the $1.90 poverty headcount ratio, followed by the male employment ratio, and the CPI. Excluding the intercept term, only 3 of the original 29 variables included in the model were not forced to zero by the LASSO. This model produced an RMSE of `r round(RMSE(exp(pred), exp(Y1)), 4)`.\
+\
+### Minimum RMSE\
+In order to determine the model producing the lowest RMSE, a function was run producing the following output:\
+\
+```\{r, include=FALSE\}\
+set.seed(42)\
+cv_5 <- trainControl(method = "cv", number = 5)\
+\
+hit_elnet <- train(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train, method = "glmnet", trControl = cv_5)\
+\
+\
+# Fitting the best RMSE model\
+bestmodel <- glmnet(X1, Y1, lambda = 0.239073, alpha = 1, standardize = TRUE)\
+pred1 <- predict(bestmodel, X1)\
+\
+```\
+\
+```\{r\}\
+get_best_result = function(caret_fit) \{best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))\
+   best_result = caret_fit$results[best, ]\
+   rownames(best_result) = NULL\
+   best_result\
+ \}\
+\
+\
+get_best_result(hit_elnet) %>% kable(caption="Optimal RMSE Model", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+The model that minimizes the RMSE for estimating the poverty headcount ratio therefore uses an $\\alpha=1$, and $\\lambda=0.2391$ to yield an RMSE of 3.5625 and $R^2=0.5715$. Fitting the LASSO model following these specifications yields the coefficient list in **TABLE X** andplot in **FIGURE YY** , with an RMSE of `r round(RMSE(exp(pred1), exp(Y1)), 4)`.\
+\
+\
+```\{r\}\
+coefList1 <- coef(bestmodel, s='lambda.1se')\
+coefList1 <- data.frame(coefList1@Dimnames[[1]][coefList1@i+1],coefList1@x)\
+names(coefList1) <- c('var','val')\
+\
+coefList1%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List (2)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance (LASSO 2)", fig.height = 4, fig.width = 6\}\
+\
+vip(bestmodel, num_features = 10, geom = "point")\
+\
+```\
+\
+Using the $\\lambda$ value implied by the RMSE minimizing model gives the result that only the food production index and the CPI (inflation) were significant determinants of the $1.90 poverty headcount ratio. \
+\
+### Minimum Lambda\
+The final model fit to investigate the most important determinants of the poverty headcount ratio in Brazil over the sample period involved specifying the tuning parameter $\\lambda=0.05385$. This implies a less severe penalty relative to the previous model, one can therefore expect that fewer coefficients will be forced to zero by the LASSO.\
+```\{r, include=FALSE\}\
+bestmodel_1 <- glmnet(X1, Y1, lambda = best_lambda12, alpha = 1, standardize = TRUE)\
+pred11 <- predict(bestmodel_1, X1)\
+\
+```\
+\
+The list of non-zero coefficients and the variable importance plot can be found below.\
+\
+```\{r\}\
+coefList11 <- coef(bestmodel_1, s='lambda.1se')\
+coefList11 <- data.frame(coefList11@Dimnames[[1]][coefList11@i+1],coefList11@x)\
+names(coefList11) <- c('var','val')\
+\
+coefList11%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List (3)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance (LASSO 3)", fig.height = 4, fig.width = 6\}\
+\
+vip(bestmodel_1, num_features = 10, geom = "point")\
+\
+```\
+\
+After fitting the LASSO using the minimum $\\lambda$ from the cross-validation procedure, one can see that there are now `r sum(coef(bestmodel_1) != 0)` non-zero coefficients (including the intercept) and `r sum(coef(bestmodel_1) == 0)` coefficients that were forced to zero. This model produces an RMSE=`r round(RMSE(exp(pred11), exp(Y1)), 4)`, the lowest of all three models; implying that the variation in the prediction errors, produced by this model, is minimized.  Table 4 gives the list of coefficients in descending order of their (standardized) absolute values. From this, one can see, that education expenditure (% of GNI) is the variable that had the most significant impact on the $1.90 poverty headcount ratio for Brazil over the sample period. Followed by military expenditure (% of GDP), the pupil-teacher ratio at pre-primary level, the male employment ratio (which now has a bigger impact), the adolescent fertility rate, and the youth labor force participation rate. Whilst net inflows of Foreign Direct Investment (% of GDP), the pupil-teacher ratio at tertiary level, the female employment ratio, and the total domestic credit to the private sector (% of GDP) appear to have the least impact on the poverty headcount ratio. \
+\
+# Robustness Checks\
+\
+In this section, the models for the 5-fold cross-validation LASSO, the LASSO using the RMSE minimizing parameters, and the LASSO using the minimum $\\lambda$ were fit on the testing data over the period 2008-2018. The non-zero coefficients for each model will be presented and their performance will be evaluated using the RMSE, and the Mean Absolute Error (MAE), these will then be compared to the results obtained when using the training data.  \
+\
+## Applying Models to Testing Data\
+### Model 1 (Cross-Validation LASSO)\
+```\{r, include=FALSE\}\
+\
+X_test1 <- model.matrix(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test)[,-1]\
+\
+Y_test1 <- log(test$Y1)\
+\
+lasso.model_test <- glmnet(\
+  x=X_test1,\
+  y=Y_test1,\
+  alpha=1,\
+  standardize=TRUE\
+)\
+\
+lasso_test1 <- cv.glmnet(\
+  x = X_test1,\
+  y = Y_test1,\
+  alpha = 1)\
+\
+pred_test <- predict(lasso.model_test, X_test1)\
+\
+coefList_test <- coef(lasso_test1, s='lambda.1se')\
+coefList_test <- data.frame(coefList_test@Dimnames[[1]][coefList_test@i+1],coefList_test@x)\
+names(coefList_test) <- c('var','val')\
+\
+```\
+\
+```\{r\}\
+coefList_test%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List Test (1)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+For the cross-validation LASSO, there are now `r sum(coef(lasso_test1) != 0)` non-zero predictors, and `r sum(coef(lasso_test1) == 0)` coefficients that were forced to zero. Excluding the intercept term,  military expenditure (% of GDP), the GINI coefficient, and the youth LFPR are now the only relevant predictors of the $1.90 poverty headcount ratio for Brazil.\
+\
+### Model 2 (Minimum RMSE)\
+\
+```\{r\}\
+bestmodel_test1 <- glmnet(X_test1, Y_test1, lambda = 0.239073, alpha = 1, standardize = TRUE)\
+\
+pred_test1 <- predict(bestmodel_test1, X_test1)\
+\
+coefList_test1 <- coef(bestmodel_test1, s='lambda.1se')\
+coefList_test1 <- data.frame(coefList_test1@Dimnames[[1]][coefList_test1@i+1],coefList_test1@x)\
+names(coefList_test1) <- c('var','val')\
+\
+```\
+\
+\
+```\{r\}\
+coefList_test1%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List Test (2)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+Specifying a LASSO ($\\alpha=1$) with, the tuning parameter, $\\lambda=0.2391$ yields the coefficient list above. The GINI coefficient is now the only non-zero coefficient relevant for predicting the poverty headcount ratio.\
+\
+\
+### Model 3 (Minimum Lambda)\
+\
+```\{r\}\
+bestmodel_test11 <- glmnet(X_test1, Y_test1, lambda = 0.05385, alpha = 1, standardize = TRUE)\
+\
+pred_test11 <- predict(bestmodel_test11, X_test1)\
+\
+coefList_test11 <- coef(bestmodel_test11, s='lambda.1se')\
+coefList_test11 <- data.frame(coefList_test11@Dimnames[[1]][coefList_test11@i+1],coefList_test11@x)\
+names(coefList_test11) <- c('var','val')\
+\
+```\
+\
+\
+```\{r\}\
+coefList_test11%>%tibble()%>%arrange(-abs(val))%>%knitr::kable(caption="Coefficient List Test (3)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+The LASSO using the minimum lambda (=0.05385), obtained from the cross-validation, yields the same coefficients as that of the first model, however their magnitudes are slightly larger in this case. None of the variables selected by the LASSO models as relevant to predicting the $1.90 poverty headcount ratio in the training set (1985-2007) are relevant predictors when using the test data (2008-2018).\
+\
+## Alternative Evaluation Metric\
+As an additional robustness check for the relative performance of the three models, the MAE's were calculated for the respective models using $MAE= \\frac\{\\sum_\{i=1\}^\{n\} |e_\{i\}|\}\{n\}$. The values of the MAE for for the cross-validation, minimum RMSE, and minimum lambda models are `r round(Metrics::mae(exp(pred), exp(Y1)), 4)`, `r round(Metrics::mae(exp(pred1), exp(Y1)), 4)`, and `r round(Metrics::mae(exp(pred11), exp(Y1)), 4)` respectively. Using this alternative metric confirms that the minimum lambda model is the most accurate, yielding the lowest prediction errors and hence best model performance. The RMSE and MAE values for the three models fit using the testing data are presented below:\
+\
+\
+| Model  | RMSE                                                 | MAE                                                         |\
+|:------:|:----------------------------------------------------:|:-----------------------------------------------------------:|\
+|    1   |  `r round(RMSE(exp(pred_test), exp(Y_test1)), 4)`    | `r round(Metrics::mae(exp(pred_test), exp(Y_test1)), 4)`    |\
+|    2   |  `r round(RMSE(exp(pred_test1), exp(Y_test1)), 4)`   | `r round(Metrics::mae(exp(pred_test1), exp(Y_test1)), 4)`   |\
+|    3   |  `r round(RMSE(exp(pred_test11), exp(Y_test1)), 4)`  |  `r round(Metrics::mae(exp(pred_test11), exp(Y_test1)), 4)` |\
+\
+\
+Even when using the testing data set, model 3 (with $\\alpha=1$ and $\\lambda=0.05385$) has the best performance, in terms of prediction accuracy, relative to the other models. Although the relative performance of each of the models, measured by the RMSE and MAE, appears to be the same when these are applied to the hold-out (testing) data, the lists of non-zero predictors are significantly different. This implies a poor out-of-sample performance of the models specified in Section 4. This could be due to a misspecification in the original model, or as a result of vastly different country characteristics for the 2008-2018 period, relative to the training set period, which would cause the determinants of the poverty headcount ratio to change significantly, with the youth LFPR being the only variable that is still significant in both the training and testing data for the best performing (minimum $\\lambda$) model.\
+\
+# Conclusion\
+\
+This paper attempted to investigate the determinants of the \\$1.90 poverty headcount ratio for Brazil over the period 1985-2018 by using LASSO regressions to perform variable selection, and determine the best set of, non-zero, predictors. Based on the training data, the model which minimizes the prediction errors, using both RMSE and MAE, specifies a tuning parameter ($\\lambda$) value of 0.05385, and selects the list of variables seen in **Table 4**. According to this model, the most significant determinant of poverty over the training period (1985-2007) was the level of government education expenditure (% of GNI). Fitting the same model to the hold-out data, covering the period 2008-2018, still resulted in the best out-of-sample relative to the other models fit on the testing data, but led to a different list of non-zero predictors. The only variable that remained significant across both models was the youth LFPR. The robust determinants of the poverty headcount ratio for Brazil were determined by using a LASSO procedure to perform variable selection. Drawing any, significant, inference from these variables regarding the magnitude of their impacts on the poverty headcount ratio is not possible using the methodology followed in this study. **Belloni & Chernozhukov (2013)** suggest a post-LASSO procedure in order to conduct inference which entails two steps. Firstly applying a LASSO regularization to determine the list of non-zero variables, and then estimating coefficients on the remaining variables via OLS and using only the variables with non-zero coefficients. This, however, lies beyond the scope of this investigation.\
+\
+\
+\
+\\newpage\
+\
+# Bibliography\
+\
+* Afzal, M., Hersh, J., & Newhouse, D. (2015). Building a better model: Variable selection to predict poverty in Pakistan and Sri Lanka. *World Bank Research Working Paper*.\
+\
+* Belloni, A. & Chernozhukov, V., 2013. Least squares after model selection in high-dimensional sparse models. *Bernoulli*, 19(2), pp. 521-547.\
+\
+* \
+\
+* Dutt, P. & Tsetlin, I., 2021. Income Distribution and Economic Development: Insights from Machine Learning. *Economics and Politics*, 33(1), pp. 1-36.\
+\
+* Friedman J, Hastie T, Tibshirani R (2010). \'93Regularization Paths for Generalized Linear Models via Coordinate Descent.\'94 *Journal of Statistical Software*, 33(1), 1\'9622. https://www.jstatsoft.org/v33/i01/.\
+\
+* Greenwell BM, Boehmke BC (2020). \'93Variable Importance Plots\'97An Introduction to the vip Package.\'94 *The R Journal*, 12(1), 343\'96366. https://doi.org/10.32614/RJ-2020-013.\
+\
+* \
+\
+* Tibshirani, R., 1996. Regression Shrinkage and Selection via the Lasso. *Journal of the Royal Statistical Society. Series B (Methodological)*, 58(1), pp. 267-288.\
+\
+* \
+\
+* Varian, H. R., 2014. Big Data: New Tricks for Econometrics. *Journal of Economic Perspectives*, 28(2), pp. 3-28.\
+\
+* Wickham H, Averick M, Bryan J, Chang W, McGowan LD, Fran\'e7ois R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, M\'fcller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). \'93Welcome to the tidyverse.\'94 *Journal of Open Source Software*, 4(43), 1686. doi: 10.21105/joss.01686.\
+\
+* World Bank, 2021. World Development Indicators. [Online] \
+Available at: https://datacatalog.worldbank.org/dataset/world-development-indicators [Accessed June 2021].\
+\
+* World Bank, 2021. Poverty and Equity Database. [Online] \
+Available at: https://datacatalog.worldbank.org/dataset/poverty-and-equity-database [Accessed June 2021].\
+\
+\
+\\newpage\
+\
+# Appendix\
+## Descriptive Statistics\
+```\{r, include=FALSE\}\
+# Obtained using the code:\
+pastecs::stat.desc(full_clean)\
+summary(full_clean)\
+```\
+\
+```\{r\}\
+descstats <- read.csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/descstat.csv")\
+\
+descstats %>%dplyr::select("X", "Y1", "Y2", "Y3", "GINI", "Electricity", "Educ_exp", "Teenage_fertility")%>%knitr::kable(caption="Descriptive Statistics (1)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r\}\
+\
+descstats %>%dplyr::select("X", "Age_Dependency", "Birth_rate", "CPI", "Death_rate", "Debt_service", "HIV")%>%knitr::kable(caption="Descriptive Statistics (2)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r\}\
+\
+descstats %>%dplyr::select("X", "Employment_ratio_fem", "Employment_ratio_mal", "Fertility", "Food_prod", "FDI_in")%>%knitr::kable(caption="Descriptive Statistics (3)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r\}\
+\
+descstats %>%dplyr::select("X","Credit_GDP","LFPR", "Life_exp", "Military_exp", "Mortality_fem", "Mortality_mal")%>%knitr::kable(caption="Descriptive Statistics (4)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r\}\
+\
+descstats %>%dplyr::select("X","IR","GNI","Homicide","Largest_city", "Rural_pop", "Urban_pop")%>%knitr::kable(caption="Descriptive Statistics (5)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+```\
+\
+```\{r\}\
+\
+descstats %>%dplyr::select("X","Pupil_teacher_pre", "Pupil_teacher_ter", "LFPR_fem_to_mal")%>%knitr::kable(caption="Descriptive Statistics (6)", align="l")%>%kable_styling(full_width = F) %>% kable_styling(latex_options = "hold_position")\
+\
+rm(descstats)\
+```\
+\
+\
+\\newpage\
+\
+## Correlations\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Correlation Plot (excluding insignificant)", fig.height = 6, fig.width = 7\}\
+\
+M <- full_clean %>% dplyr::select(-Year)\
+\
+cor.mtest <- function(mat, ...) \{\
+ mat <- as.matrix(mat)\
+n <- ncol(mat)\
+p.mat<- matrix(NA, n, n)\
+diag(p.mat) <- 0\
+for (i in 1:(n - 1)) \{\
+     for (j in (i + 1):n) \{\
+         tmp <- cor.test(mat[, i], mat[, j], ...)\
+           p.mat[i, j] <- p.mat[j, i] <- tmp$p.value\
+       \}\
+   \}\
+   colnames(p.mat) <- rownames(p.mat) <- colnames(mat)\
+   p.mat\
+ \}\
+p.mat <- cor.mtest(M)\
+\
+M1 <- cor(M)\
+corrplot(M1, type="lower", order="hclust",  p.mat = p.mat, sig.level = 0.01, insig = "blank")\
+\
+\
+```\
+\
+\\newpage \
+\
+## Optimal RMSE model\
+\
+```\{r\}\
+hit_elnet\
+```\
+\
+\
+## Predictors for Testing Data\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance Test (LASSO 1)", fig.height = 4, fig.width = 6\}\
+\
+vip(lasso_test1, num_features = 10, geom = "point")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance Test (LASSO 2)", fig.height = 4, fig.width = 6\}\
+\
+vip(bestmodel_test1, num_features = 10, geom = "point")\
+\
+```\
+\
+```\{r, echo=FALSE, message=FALSE, warning =  FALSE, fig.align = 'left', fig.cap = "Variable Importance Test (LASSO 3)", fig.height = 4, fig.width = 6\}\
+\
+vip(bestmodel_test11, num_features = 10, geom = "point")\
+\
+```\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+}

@@ -1,0 +1,231 @@
+---
+title: "Alt Poverty Lines"
+output: html_document
+---
+# Training
+## Measuring Poverty Headcount Ratio at different Poverty Lines
+### $3.20
+```{r}
+X2 <- model.matrix(Y2~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train)[,-1]
+
+Y2 <- log(train$Y2)
+
+
+lasso.model2 <- glmnet(
+  x=X2,
+  y=Y2,
+  alpha=1,
+  standardize=TRUE
+)
+
+plot_glmnet(lasso.model2, xvar="lambda")
+plot_glmnet(lasso.model2, xvar="lambda", label=5)
+
+lasso2 <- cv.glmnet(
+  x = X2,
+  y = Y2,
+  alpha = 1)
+
+plot(lasso2, main="Lasso Penalty Y2")
+
+# Most important coefficients
+coefList_2 <- coef(lasso2, s='lambda.1se')
+coefList_2 <- data.frame(coefList_2@Dimnames[[1]][coefList_2@i+1],coefList_2@x)
+names(coefList_2) <- c('var','val')
+
+coefList_2%>%
+  arrange(-abs(val))
+
+sum(coef(lasso2) != 0) # 5 non-zero predictors
+sum(coef(lasso2) == 0) # 25 zero predictors
+
+
+# Best Model
+
+set.seed(42)
+cv_5 = trainControl(method = "cv", number = 5)
+
+hit_elnet2 = train(Y2~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train, method = "glmnet", trControl = cv_5)
+
+hit_elnet2
+
+
+
+
+get_best_result(hit_elnet2)
+
+## Using Optimal Lambda
+
+
+bestmodel2 <- glmnet(X2, Y2, lambda = 1.137513, alpha = 1, standardize = TRUE)
+
+pred2 <- predict(bestmodel2, X2)
+RMSE(exp(pred2), exp(Y2))
+
+
+### Most Important Predictors
+coefList2 <- coef(bestmodel2, s='lambda.1se')
+coefList2 <- data.frame(coefList2@Dimnames[[1]][coefList2@i+1],coefList2@x)
+names(coefList2) <- c('var','val')
+
+coefList2%>%
+  arrange(-abs(val))
+
+sum(coef(bestmodel2) != 0) # 1 non-zero predictors
+sum(coef(bestmodel2) == 0) # 29 zero predictors
+
+# When using optimal model, number of non-zero predictors decreases -> Male employment ratio and teenage fertility dropped out of model.
+
+
+
+```
+
+### $5.50
+```{r}
+
+X3 <- model.matrix(Y3~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train)[,-1]
+
+Y3 <- log(train$Y3)
+
+
+lasso.model3 <- glmnet(
+  x=X3,
+  y=Y3,
+  alpha=1,
+  standardize=TRUE
+)
+
+plot_glmnet(lasso.model3, xvar="lambda")
+plot_glmnet(lasso.model3, xvar="lambda", label=5)
+
+lasso3 <- cv.glmnet(
+  x = X3,
+  y = Y3,
+  alpha = 1)
+
+plot(lasso3, main="Lasso Penalty Y3")
+
+pred3 <- predict(lasso3, X3)
+RMSE(exp(pred3), exp(Y3)) # RMSE=6.452
+
+lasso3$lambda.min
+
+# Most important coefficients
+coefList_3 <- coef(lasso3, s='lambda.1se')
+coefList_3 <- data.frame(coefList_3@Dimnames[[1]][coefList_3@i+1],coefList_3@x)
+names(coefList_3) <- c('var','val')
+
+coefList_3%>%
+  arrange(-abs(val))
+
+sum(coef(lasso3) != 0) # 5 non-zero predictors
+sum(coef(lasso3) == 0) # 25 zero predictors
+
+
+# Best Model
+
+set.seed(42)
+cv_5 = trainControl(method = "cv", number = 5)
+
+hit_elnet3 = train(Y3~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train, method = "glmnet", trControl = cv_5)
+
+hit_elnet3
+
+
+
+
+get_best_result(hit_elnet3)
+
+## Using Best Model
+
+
+bestmodel3 <- glmnet(X3, Y3, lambda = 1.1305083, alpha = 1, standardize = TRUE)
+pred31 <- predict(bestmodel3, X3)
+RMSE(exp(pred31), exp(Y3)) # RMSE =8.10352
+
+coefList_31 <- coef(bestmodel3, s='lambda.1se')
+coefList_31 <- data.frame(coefList_31@Dimnames[[1]][coefList_31@i+1],coefList_31@x)
+names(coefList_31) <- c('var','val')
+
+coefList_31%>%
+  arrange(-abs(val))
+
+sum(coef(lasso3) != 0) # 5 non-zero predictors
+sum(coef(lasso3) == 0) # 25 zero predictors
+
+```
+
+
+# Testing
+```{r}
+
+X_test2 <- model.matrix(Y2~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test)[,-1]
+
+Y_test2 <- log(test$Y2)
+
+
+
+set.seed(42)
+
+hit_elnet_test2 = train(Y2~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test, method = "glmnet", trControl = cv_5)
+
+hit_elnet_test2
+
+
+
+
+get_best_result(hit_elnet_test2)
+
+## Using Optimal Lambda
+
+
+bestmodel_test2 <- glmnet(X_test2, Y_test2, lambda = 2.319658, alpha = 0.1, standardize = TRUE)
+
+pred_test2 <- predict(bestmodel_test2, X_test2)
+RMSE(exp(pred_test2), exp(Y_test2))
+
+coefList_test2 <- coef(bestmodel_test2, s='lambda.1se')
+coefList_test2 <- data.frame(coefList_test2@Dimnames[[1]][coefList_test2@i+1],coefList_test2@x)
+names(coefList_test2) <- c('var','val')
+
+coefList_test2%>%
+  arrange(-abs(val))
+
+
+
+
+
+X_test3 <- model.matrix(Y3~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test)[,-1]
+
+Y_test3 <- log(test$Y3)
+
+
+set.seed(42)
+
+hit_elnet_test3 = train(Y3~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test, method = "glmnet", trControl = cv_5)
+
+hit_elnet_test3
+
+
+
+
+get_best_result(hit_elnet_test3)
+
+## Using Optimal Lambda
+
+
+bestmodel_test3 <- glmnet(X_test3, Y_test3, lambda = 0.3266433, alpha = 0.55, standardize = TRUE)
+
+pred_test3 <- predict(bestmodel_test3, X_test3)
+RMSE(exp(pred_test3), exp(Y_test3))
+
+coefList_test3 <- coef(bestmodel_test3, s='lambda.1se')
+coefList_test3 <- data.frame(coefList_test3@Dimnames[[1]][coefList_test3@i+1],coefList_test3@x)
+names(coefList_test3) <- c('var','val')
+
+coefList_test3%>%
+  arrange(-abs(val))
+
+
+
+```

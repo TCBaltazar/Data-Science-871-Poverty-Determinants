@@ -1,0 +1,37 @@
+---
+title: "data cleaning"
+output: html_document
+---
+
+
+When compiling the full dataset for Brazil, many predictor variables from the Poverty and Equity database had a large number of missing values. These were:
+
+|                               Variable Name                              | n Missing Values |
+|:------------------------------------------------------------------------:|:----------------:|
+|    Poverty Headcount Ratio at National Poverty lines (% of population)   |        34        |
+|  Annualized growth in p/capita real survey mean consumption (bottom 40%) |        34        |
+|   Annualized growth in p/capita real survey mean consumption (top 10%)   |        34        |
+|   Annualized growth in p/capita real survey mean consumption (top 60%)   |        34        |
+| Annualized growth in p/capita real survey mean consumption (total pop %) |        34        |
+|      Annualized growth in p/capita real survey mean consumption (%)      |        34        |
+|         Median daily p/capita consumption expenditure (2011 PPP)         |        33        |
+|       Multidimensional Poverty- Drinking Water (% of pop deprived)       |        33        |
+|   Multidimensional Poverty- Educational Attainment (% of pop deprived)   |        33        |
+|         Multidimensional Poverty- Electricity (% of pop deprived)        |        33        |
+|           Multidimensional Poverty- Headcount ratio (% of pop)           |        33        |
+|      Multidimensional Poverty- Monetary Poverty (% of pop deprived)      |        33        |
+|         Multidimensional Poverty- Sanitation (% of pop deprived)         |        33        |
+
+
+Not included in this list, but nevertheless removed due to missing values, are the poverty headcount ratios for different population segments, measured in 2011 PPP, survey mean consumption data for the top 10% and 60%, as well as bottom 40%, of the population. In total 30 variables were more than 50% incomplete, these will therefore not be considered for any future analysis. In order to increase the number of, possibly, relevant predictors for the poverty headcount ratio measures, the World Bank Income and Equity data was supplemented using variables from the World Development Indicators database. This data was uploaded from a csv file (data available at:https://datacatalog.worldbank.org/dataset/world-development-indicators). Reformatting the data to a tidy format, using SQL, yielded the same error as with the Income and Equity data.
+
+The World Development Indicators data was made tidy using the same procedure as for the Poverty and Equity database. Below the first ten rows of the data can be seen.
+
+Prior to removing missing values, the dataset consisted of 66 variables. Dealing with missing values entailed two steps. Firstly, variables that had more than 9 (26%) observations missing, were removed. Secondly, the missing values of the remaining variables were replaced with the column mean.
+
+Many of the variables in the full dataset can be dropped, before conducting any statistical analysis, starting with the country name and code. Variables accounting for the number of poor and the poverty gap (% of the population) at \$1.90, \$3.20, and \$5.50 poverty lines as these will be perfectly correlated with the poverty headcount ratio. Adjusted Net National Income and GDP, as well as their p/capita equivalents, were also dropped in favor of using GNI measures. 2 variables in the database are PPG estimates, for Debt Service measures were also excluded, as was the domestic credit to the private sector by banks. However, World Bank estimates for the Debt Service on External Debt, the DEC conversion factor (annual exchange rate measure), and the total domestic credit to the private sector as a % of GDP (including banks). The employment to population ratio was disagregated for males and females, and so the variable measuring the total employment to population was removed. The under-5 mortality rate was also excluded, as poverty should affect infant mortality, not the other way around. Total life expectancy was used as opposed to the life expectancy for men and women. Various measures of income inequality were also removed in favor of using the GINI coefficient.  
+
+4 : 6 (Number of poor) & 8 : 10 (poverty gaps). 15 : 21 (Income Shares) & 59 (Prop of people living below 50% median income). 23 : 24 (Adjusted Net National Income). 32 : 33 (Debt Service PPG estimates) . 35 (Exchange Rate). 38 (Credit-Private sector by banks). 41 (Employment to pop ratio Total). 45 : 46 (GDP & GDP p/capita). 48 (GNI p/capita). 51 : 52 (Life expectancy: males and females). 57 (Under 5 mortality rate). 54 : 65 (Survival rate)
+
+The final (clean) dataset used consisted of 34 observations and 35 variables.
+

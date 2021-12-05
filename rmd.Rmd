@@ -1,0 +1,428 @@
+---
+title: "Datsci rmd"
+output: html_document
+---
+
+```{r setup, message=FALSE, error=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+pacman::p_load("tidyverse", "Hmisc", "lubridate", "glmnet", "RSQLite", "dbplyr", "DBI", "sqldf", "rsample", "randomForest", "imputeTS", "tseries", "caret", "plotmo", "pastecs", "kableExtra", "corrplot", "vip")
+
+pacman::p_load_gh("kassambara/ggcorrplot")
+
+dir.create("data_raw", showWarnings = FALSE)
+```
+
+# Downloading Raw Data from World Bank site
+```{r}
+download.file(url="https://databank.worldbank.org/data/download/PovStats_csv.zip", destfile="data_raw/WB_data.zip", mode="wb")
+
+unzip(zipfile="/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/WB_data.zip", exdir="/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/")
+```
+
+# Using RSQLite and uploading read_CSV to SQL database
+```{r, error=TRUE}
+WB_dta <- read.csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/PovStatsData.csv")
+
+WB_dta1 <- read_csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/PovStatsData.csv")
+
+# Attempt at using SQL
+
+WB_db <- DBI::dbConnect(RSQLite::SQLite(), "WB_SQL")
+
+dbWriteTable(WB_db, "WB_data1", WB_dta)
+
+
+dbListTables(WB_db)
+dbListFields(WB_db, "WB_data")
+
+```
+
+
+
+```{r}
+
+data <- dplyr::tbl(WB_db, "WB_data")
+
+data %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% 
+  pivot_wider(names_from="Indicator")%>%
+  mutate_at("Year", str_replace, "X", "")%>%
+  arrange(Country.Name, Year)
+
+# Unable to apply necessary transformations to make data tidy:
+  #Error in UseMethod("unite_") :  no applicable method for 'unite_' applied to an object of class "c('tbl_SQLiteConnection')
+
+# Therefore continue using methods from Tidyverse to organize data
+
+```
+
+# Converting database to Relational
+The data sourced from the World Bank had years as columns, with the relevant Poverty & Equity indicators under one column titled Indicator Name. 
+```{r, echo=FALSE}
+
+head(data, n=10)
+
+```
+
+To make the data tidy, three steps were taken.
+1. The indicator codes associated with each indicator were merged
+2. Years were put into a single column titled "Year"
+3. The indicators were turned into columns
+
+```{r}
+dta <- WB_dta %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% 
+  pivot_wider(names_from="Indicator")%>%
+  mutate_at("Year", str_replace, "X", "")%>%
+  arrange(Country.Name, Year)
+
+```
+
+The whole dataset was then arranged by country name and year, yielding: 
+
+```{r}
+
+head(dta, n=10)
+```
+
+# Restricting Study to Brazil Post-1985 Period
+
+```{r}
+# Filtering the data
+dta1 <- dta%>%filter(Country.Name== "Brazil") %>% filter(Year>1984)
+
+```
+
+# Source additional World Bank HDR Data to further analysis
+When compiling the full dataset for Brazil, many predictor variables had a large number of missing values. These were:
+
+|                               Variable Name                              | n Missing Values |
+|:------------------------------------------------------------------------:|:----------------:|
+|    Poverty Headcount Ratio at National Poverty lines (% of population)   |        34        |
+|  Annualized growth in p/capita real survey mean consumption (bottom 40%) |        34        |
+|   Annualized growth in p/capita real survey mean consumption (top 10%)   |        34        |
+|   Annualized growth in p/capita real survey mean consumption (top 60%)   |        34        |
+| Annualized growth in p/capita real survey mean consumption (total pop %) |        34        |
+|      Annualized growth in p/capita real survey mean consumption (%)      |        34        |
+|         Median daily p/capita consumption expenditure (2011 PPP)         |        33        |
+|       Multidimensional Poverty- Drinking Water (% of pop deprived)       |        33        |
+|   Multidimensional Poverty- Educational Attainment (% of pop deprived)   |        33        |
+|         Multidimensional Poverty- Electricity (% of pop deprived)        |        33        |
+|           Multidimensional Poverty- Headcount ratio (% of pop)           |        33        |
+|      Multidimensional Poverty- Monetary Poverty (% of pop deprived)      |        33        |
+|         Multidimensional Poverty- Sanitation (% of pop deprived)         |        33        |
+
+
+Not included in this list, but nevertheless removed due to missing values, are the poverty headcount ratios for different population segments, measured in 2011 PPP, survey mean consumption data for the top 10% and 60%, as well as bottom 40%, of the population. In total 30 variables were more than 50% incomplete, these will therefore not be considered for any future analysis. In order to increase the number of, possibly, relevant predictors for the poverty headcount ratio measures, the World Bank Income and Equity data was supplemented using variables from the World Development Indicators database. This data was uploaded from a csv file (data available at:https://datacatalog.worldbank.org/dataset/world-development-indicators). Reformatting the data to a tidy format, using SQL, yielded the same error as with the Income and Equity data.
+
+```{r}
+
+WDI <-read.csv("/Users/tiagob/Documents/Masters 2021/First Semester/Data Science/Project/data_raw/WDI/WDIData.csv")
+
+WDI_dta <- WDI %>% unite(Indicator, c(Indicator.Name, Indicator.Code), remove=TRUE) %>% pivot_longer(cols=starts_with("X"), names_to="Year", values_drop_na=TRUE) %>% 
+  pivot_wider(names_from="Indicator")%>%
+  mutate_at("Year", str_replace, "X", "")%>%
+  filter(Year>1984) %>%
+  arrange(Country.Name, Year)
+
+```
+
+The World Development Indicators data was made tidy using the same procedure as for the Poverty and Equity database. Below the first ten rows of the data can be seen.
+
+```{r}
+head(WDI_dta, n=10)
+```
+
+
+We now have two datasets that can be merged, by country, in order to analyze the determinants of the poverty headcount ratio in Brazil using a more complete list of variables.
+
+```{r}
+full_BR <- left_join(dta1, WDI_dta)%>% select_if(colSums(!is.na(.))>9)%>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+
+```
+
+Prior to removing missing values, the dataset consisted of 66 variables. Dealing with missing values entailed two steps. Firstly, variables that had more than 9 (26%) observations missing, were removed. Secondly, the missing values of the remaining variables were replaced with the column mean.
+
+```{r}
+
+head(full_BR, n=10)
+```
+
+# Using data to predict the poverty headcount ratio for Brazil
+The full Brazilian dataset has 34 observations with 66 variables.
+
+```{r, include=FALSE}
+# Full list of variables
+data.frame(colnames(full_BR))%>%tibble(n=nrow(full_BR))
+
+```
+
+Many of the variables in the full dataset can be dropped, before conducting any statistical analysis, starting with the country name and code. Variables accounting for the number of poor and the poverty gap (% of the population) at \$1.90, \$3.20, and \$5.50 poverty lines as these will be perfectly correlated with the poverty headcount ratio. Adjusted Net National Income and GDP, as well as their p/capita equivalents, were also dropped in favor of using GNI measures. 2 variables in the database are PPG estimates, for Debt Service measures were also excluded, as was the domestic credit to the private sector by banks. However, World Bank estimates for the Debt Service on External Debt, the DEC conversion factor (annual exchange rate measure), and the total domestic credit to the private sector as a % of GDP (including banks). The employment to population ratio was disagregated for males and females, and so the variable measuring the total employment to population was removed. The under-5 mortality rate was also excluded, as poverty should affect infant mortality, not the other way around. Total life expectancy was used as opposed to the life expectancy for men and women. Various measures of income inequality were also removed in favor of using the GINI coefficient.  
+
+4 : 6 (Number of poor) & 8 : 10 (poverty gaps) -> perfectly correlated
+15 : 21 (Income Shares) & 59 (Prop of people living below 50% median income)
+23 : 24 (Adjusted Net National Income) 
+32 : 33 (Debt Service PPG estimates) 
+35 (Exchange Rate)
+38 (Credit-Private sector by banks)
+41 (Employment to pop ratio Total)
+45 : 46 (GDP & GDP p/capita) 
+48 (GNI p/capita)
+51 : 52 (Life expectancy: males and females)
+57 (Under 5 mortality rate)
+54 : 65 (Survival rate)
+
+
+```{r}
+
+dimnames(full_BR)
+
+full_clean <- select(full_BR, -1,-2,-4:-6,-8:-10,-15:-21,-23:-24,-32:-33,-35, -38,-41,-45:-46,-48,-51:-52,-57,-59, -64:-65)
+
+# And rename relevant variables
+
+colnames(full_clean) <- c("Year", "Population", "Y1", "Y2","Y3", "GINI", "Electricity", "Educ_exp", "Teenage_fertility", "HIV", "Age_dependency", "Birth_rate", "CPI", "Death_rate","Debt_service","IR", "Credit_GDP", "Employment_ratio_fem", "Employment_ratio_mal", "Fertility", "Food_prod", "FDI_in","GNI", "Homicide", "LFPR", "Life_exp", "Military_exp", "Mortality_fem", "Mortality_mal", "Largest_city", "Pupil_teacher_pre","Pupil_teacher_ter", "LFPR_femal_to_male", "Rural_pop", "Urban_pop" )
+
+```
+
+
+# Partitioning the Data into training and testing
+
+Simple random sampling is not appropriate, as we may lose important information from the series, time inconsistent. Therefore split sets sequentially. Generally 20% of sample kept as a testing set, here, since there is a small number of observations, 70% was used for the training data. 
+
+```{r}
+set.seed(100)
+
+train_indices <- seq_len(length.out = floor(x = 0.7 * nrow(x = full_clean)))
+train <- full_clean[train_indices,]
+test <- full_clean[-train_indices,]
+
+dim(train)
+dim(test)
+
+
+
+
+# Testing for Stationarity of Dependent Variables
+full_BR_ts <- as.ts(full_clean)
+
+adf.test(full_clean$Y1)
+
+# Dependent variables stationary at 5% significance (poverty headcount   @       $1.90 
+
+```
+
+
+
+# Regularized Regressions
+Regularized regression can be applied when there are a large number of predictor variables (features) and when data is highly collinear.
+
+```{r, echo=FALSE}
+
+X1 <- model.matrix(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train)[,-1]
+
+Y1 <- log(train$Y1)
+
+ridge.model1 <- glmnet(
+  x=X1,
+  y=Y1,
+  alpha=0,
+  standardize=TRUE
+)
+
+plot_glmnet(ridge.model1, xvar="lambda")
+plot_glmnet(ridge.model1, xvar="lambda", label=5)
+
+ridge1 <- cv.glmnet(
+  x = X1,
+  y = Y1,
+  alpha = 0)
+
+plot(ridge1, main="Ridge Penalty Y1")
+
+
+sum(coef(ridge1) != 0) # 30 non-zero coefficients
+
+
+
+lasso.model1 <- glmnet(
+  x=X1,
+  y=Y1,
+  alpha=1,
+  standardize=TRUE
+)
+
+plot_glmnet(lasso.model1, xvar="lambda")
+plot_glmnet(lasso.model1, xvar="lambda", label=5)
+
+lasso1 <- cv.glmnet(
+  x = X1,
+  y = Y1,
+  alpha = 1)
+
+plot(lasso1, main="Lasso Penalty Y1")
+
+# Most important coefficients
+coefList <- coef(lasso1, s='lambda.1se')
+coefList <- data.frame(coefList@Dimnames[[1]][coefList@i+1],coefList@x)
+names(coefList) <- c('var','val')
+
+coefList%>%tibble()%>%arrange(-abs(val))
+
+
+sum(coef(lasso1) != 0) # 5 non-zero predictors
+sum(coef(lasso1) == 0) # 25 zero predictors
+
+pred <- predict(lasso1, X1)
+RMSE(exp(pred), exp(Y1)) # RMSE=3.786609
+
+pred
+
+best_lambda12 <- lasso1$lambda.min
+best_lambda12
+
+# Best Model
+
+set.seed(42)
+cv_5 = trainControl(method = "cv", number = 5)
+
+hit_elnet = train(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=train, method = "glmnet", trControl = cv_5)
+
+hit_elnet
+
+get_best_result = function(caret_fit) {best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
+   best_result = caret_fit$results[best, ]
+   rownames(best_result) = NULL
+   best_result
+ }
+
+
+
+get_best_result(hit_elnet)
+
+## Using Optimal Lambda
+
+
+bestmodel <- glmnet(X1, Y1, lambda = 0.239073, alpha = 1, standardize = TRUE)
+pred1 <- predict(bestmodel, X1)
+RMSE(exp(pred1), exp(Y1)) # RMSE=4.4084
+
+
+
+### Most Important Predictors
+coefList1 <- coef(bestmodel, s='lambda.1se')
+coefList1 <- data.frame(coefList1@Dimnames[[1]][coefList1@i+1],coefList1@x)
+names(coefList1) <- c('var','val')
+
+coefList1%>%
+  arrange(-abs(val))
+
+sum(coef(bestmodel) != 0) # 3 non-zero predictors
+sum(coef(bestmodel) == 0) # 27 zero predictors
+
+# Using minimum lambda (best_lambda12)
+
+bestmodel_1 <- glmnet(X1, Y1, lambda = best_lambda12, alpha = 1, standardize = TRUE)
+pred11 <- predict(bestmodel_1, X1)
+RMSE(exp(pred11), exp(Y1)) # RMSE=2.6059
+
+coefList11 <- coef(bestmodel_1, s='lambda.1se')
+coefList11 <- data.frame(coefList11@Dimnames[[1]][coefList11@i+1],coefList11@x)
+names(coefList11) <- c('var','val')
+
+coefList11%>%
+  arrange(-abs(val))
+
+sum(coef(bestmodel_1) != 0) # 3 non-zero predictors
+sum(coef(bestmodel_1) == 0) # 27 zero predictors
+
+
+
+```
+
+# Robustness Checks
+
+
+## Using the Testing data
+
+```{r, echo=FALSE}
+X_test1 <- model.matrix(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test)[,-1]
+
+Y_test1 <- log(test$Y1)
+
+
+
+lasso.model_test <- glmnet(
+  x=X_test1,
+  y=Y_test1,
+  alpha=1,
+  standardize=TRUE
+)
+
+plot_glmnet(lasso.model_test, xvar="lambda")
+plot_glmnet(lasso.model_test, xvar="lambda", label=5)
+
+lasso_test1 <- cv.glmnet(
+  x = X_test1,
+  y = Y_test1,
+  alpha = 1)
+
+plot(lasso_test1, main="Lasso Penalty Y1 (Test)")
+
+
+pred_test <- predict(lasso.model_test, X_test1)
+RMSE(exp(pred_test), exp(Y_test1)) # RMSE=3.1325
+
+coefList_test <- coef(lasso_test1, s='lambda.1se')
+coefList_test <- data.frame(coefList_test@Dimnames[[1]][coefList_test@i+1],coefList_test@x)
+names(coefList_test) <- c('var','val')
+
+coefList_test%>%
+  arrange(-abs(val))
+
+
+best_lambda_t12 <- lasso_test1$lambda.min
+best_lambda_t12
+
+
+set.seed(42)
+
+hit_elnet_test1 = train(Y1~GINI+Electricity+Educ_exp+Teenage_fertility+HIV+Age_dependency+Birth_rate+CPI+Death_rate+Debt_service+IR+Credit_GDP+Employment_ratio_fem+Employment_ratio_mal+Fertility+Food_prod+FDI_in+Homicide+LFPR+Life_exp+Military_exp+Mortality_fem+Mortality_mal+Largest_city+Pupil_teacher_pre+Pupil_teacher_ter+LFPR_femal_to_male+Rural_pop+Urban_pop,data=test, method = "glmnet", trControl = cv_5)
+
+hit_elnet_test1
+
+
+get_best_result(hit_elnet_test1)
+
+## Using Optimal Lambda
+
+
+bestmodel_test1 <- glmnet(X_test1, Y_test1, lambda = 0.125714, alpha = 0.55, standardize = TRUE)
+
+pred_test1 <- predict(bestmodel_test1, X_test1)
+RMSE(exp(pred_test1), exp(Y_test1)) # RMSE=0.94688
+
+coefList_test1 <- coef(bestmodel_test1, s='lambda.1se')
+coefList_test1 <- data.frame(coefList_test1@Dimnames[[1]][coefList_test1@i+1],coefList_test1@x)
+names(coefList_test1) <- c('var','val')
+
+coefList_test1%>%
+  arrange(-abs(val))
+
+
+# Using min lambda (best_lambda_t12)
+
+bestmodel_test11 <- glmnet(X_test1, Y_test1, lambda = best_lambda_t12, alpha = 0.55, standardize = TRUE)
+
+pred_test11 <- predict(bestmodel_test11, X_test1)
+RMSE(exp(pred_test11), exp(Y_test1)) # RMSE=0.31133
+
+coefList_test11 <- coef(bestmodel_test11, s='lambda.1se')
+coefList_test11 <- data.frame(coefList_test11@Dimnames[[1]][coefList_test11@i+1],coefList_test11@x)
+names(coefList_test11) <- c('var','val')
+
+coefList_test11%>%
+  arrange(-abs(val))
+
+
+```
